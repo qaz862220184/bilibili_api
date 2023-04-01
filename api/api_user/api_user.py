@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query
-from dependencies import *
+from bilibili_api.api.dependencies import *
 
 app_user = APIRouter()
 """
@@ -98,4 +98,44 @@ async def upload_count(uid: int = Query(description="目标用户mid")):
         用户关系相关
     *******
 """
+@app_user.get('user_relation/followers', summary="查询用户粉丝明细")
+def followers(access_key: str = Query(None, description='App登陆Token'), vmid: int = Query(description='目标用户mid'),
+              ps: int = Query(50,description='每页数量'), pn: int = Query(1, description='页码')):
+    '''
+    note:: 登录可看自己前1000名，其他用户可查看前250名（网页端请求时ps为20，所以直接查看只能看到前100名）
+    :param access_key: App登陆Token
+    :param vmid: 目标用户mid
+    :param ps: 每页数量
+    :param pn: 页码
+    :return:
+    '''
+    url = "https://api.bilibili.com/x/relation/followers"
+    params = {"access_key": access_key, "vmid": vmid, "ps": ps, "pn": pn}
+    try:
+        response = requests.get(url=url, params=params, headers=header)
+        data = response.json()
+        return {"code": 1, "message": "请求成功", "data": data}
+    except:
+        return {"code": -1, "message": "请求失败", "data": {}}
 
+@app_user.get('user_relation/followings', summary="查询用户关注明细")
+def followings(access_key: str = Query(None, description='App登陆Token'), vmid: int = Query(description='目标用户mid'),
+               ps: int = Query(50,description='每页数量'), pn: int = Query(1, description='页码'),
+               order_type: str = Query(None, description='排序方式')):
+    '''
+    :param access_key: App登陆Token
+    :param vmid: 目标用户mid
+    :param ps: 每页数量 -> 默认为50
+    :param pn: 页码 -> 默认为1,其他用户仅可查看前5页
+    :param order_type: 排序方式 -> 按照关注顺序排列：留空, 按照最常访问排列：attention
+    :return: 
+    '''
+    url = "https://api.bilibili.com/x/relation/followings"
+    params = {"access_key": access_key, "vmid": vmid, "ps": ps, "pn": pn, "order_type": order_type}
+    try:
+        response = requests.get(url=url, params=params, headers=header)
+        data = response.json()
+        return {"code": 1, "message": "请求成功", "data": data}
+    except:
+        return {"code": -1, "message": "请求失败", "data": {}}
+    pass

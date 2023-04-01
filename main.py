@@ -3,7 +3,7 @@ import uvicorn
 
 app = FastAPI()
 
-from api import app_user
+from bilibili_api.api import app_user
 
 app.include_router(app_user, prefix='/bilibili/api/v/user', tags=["用户"])
 
